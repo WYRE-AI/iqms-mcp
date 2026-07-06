@@ -7,7 +7,7 @@
 # - If a future feature needs Thick mode (Advanced Queuing, Sharded DB, etc.)
 #   switch the base image to `node:22-bookworm-slim` and `apt-get install` the
 #   Instant Client before pulling that work in.
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 
 ARG VERSION="unknown"
 ARG COMMIT_SHA="unknown"
@@ -23,7 +23,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 RUN rm -f .npmrc
 
-FROM node:22-alpine AS production
+FROM node:26-alpine AS production
 
 RUN addgroup -g 1001 -S iqms && \
     adduser -S iqms -u 1001 -G iqms

@@ -93,9 +93,22 @@ export function getCredentials(): Credentials | null {
 //
 // The Map is process-global (intentionally), but it is safe: it is append-only
 // per unique credential set and never mutates a cached entry in place.
+//
+// The cache stores in-flight Promise<IqmsClient>, not resolved clients. This
+// closes a same-tenant race: if two concurrent requests for a brand-new
+// credential key both call getClient() before the first IqmsClient.create()
+// resolves, a value-cache (Map<string, IqmsClient>) would let both callers
+// miss the cache and each create their own Oracle pool — the second .set()
+// silently overwrites the first pool reference, orphaning it (never closed,
+// holds poolMin..poolMax live Oracle connections forever). Caching the
+// pending Promise synchronously — before awaiting — means the second caller
+// sees the in-flight promise and awaits the same pool instead of creating a
+// duplicate. On rejection the entry is removed so a transient failure (e.g.
+// bad credentials, DB unreachable) doesn't permanently poison the cache for
+// that key; the next call retries cleanly.
 // ---------------------------------------------------------------------------
 
-const _clientCache = new Map<string, IqmsClient>();
+const _clientCache = new Map<string, Promise<IqmsClient>>();
 
 function credentialKey(creds: Credentials): string {
   // Use arrays (not '@'-joined strings) so field boundaries are unambiguous —
@@ -128,16 +141,26 @@ export async function getClient(): Promise<IqmsClient> {
   const cached = _clientCache.get(key);
   if (cached) return cached;
 
-  const client = await IqmsClient.create({
+  // Register the in-flight promise BEFORE awaiting anything — this is the
+  // synchronous step (no `await` between the .get() miss above and this
+  // .set()) that closes the concurrent-creation race described above.
+  const pending = IqmsClient.create({
     oracle: creds.oracle,
     webapi: creds.webapi ?? undefined,
+  }).then((client) => {
+    logger.info('Created IQMS client', {
+      connectString: creds.oracle.connectString,
+      webapi: !!creds.webapi,
+    });
+    return client;
   });
-  _clientCache.set(key, client);
-  logger.info('Created IQMS client', {
-    connectString: creds.oracle.connectString,
-    webapi: !!creds.webapi,
+  pending.catch(() => {
+    // Creation failed — don't leave a rejected promise cached forever; let
+    // the next call retry (e.g. after a transient DB outage).
+    if (_clientCache.get(key) === pending) _clientCache.delete(key);
   });
-  return client;
+  _clientCache.set(key, pending);
+  return pending;
 }
 
 /**
@@ -145,9 +168,14 @@ export async function getClient(): Promise<IqmsClient> {
  * Intended for graceful shutdown and test teardown only.
  */
 export async function closeAllClients(): Promise<void> {
-  const clients = [..._clientCache.values()];
+  const pending = [..._clientCache.values()];
   _clientCache.clear();
-  await Promise.all(clients.map((c) => c.close().catch(() => undefined)));
+  const results = await Promise.allSettled(pending);
+  await Promise.all(
+    results
+      .filter((r): r is PromiseFulfilledResult<IqmsClient> => r.status === 'fulfilled')
+      .map((r) => r.value.close().catch(() => undefined)),
+  );
 }
 
 // ---------------------------------------------------------------------------

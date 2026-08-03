@@ -38,7 +38,7 @@
     "url": "git+https://github.com/wyre-technology/iqms-mcp.git"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@wyre-technology/node-iqms": "github:wyre-technology/node-iqms#main"
   },
   "devDependencies": {

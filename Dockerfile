@@ -24,8 +24,15 @@ RUN npm ci --ignore-scripts
 # that, leaving node_modules/@wyre-technology/node-iqms without a dist/ at
 # all and crashing at runtime with ERR_MODULE_NOT_FOUND. Re-install just this
 # one package with scripts enabled instead of disabling --ignore-scripts
-# fleet-wide.
-RUN npm install --ignore-scripts=false --no-save @wyre-technology/node-iqms@github:wyre-technology/node-iqms#main
+# fleet-wide. Pinned to the exact commit warden security-reviewed (not #main)
+# so every build embeds precisely what was verified, not whatever main
+# happens to resolve to on build day — matches the package.json dep spec.
+# The rm -rf is required, not cosmetic: since package.json/package-lock.json
+# now already resolve to this same pinned SHA, npm treats the incomplete copy
+# left by --ignore-scripts as already-satisfying the spec and silently skips
+# reinstalling it without this — verified by hand, this is not a hypothetical.
+RUN rm -rf node_modules/@wyre-technology/node-iqms && \
+    npm install --ignore-scripts=false --no-save @wyre-technology/node-iqms@github:wyre-technology/node-iqms#bca1ef4388bb0015f809b4098049304a7610c9f5
 COPY . .
 RUN npm run build
 RUN npm prune --omit=dev

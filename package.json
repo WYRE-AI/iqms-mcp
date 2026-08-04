@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
-    "@wyre-technology/node-iqms": "github:wyre-technology/node-iqms#main"
+    "@wyre-technology/node-iqms": "github:wyre-technology/node-iqms#bca1ef4388bb0015f809b4098049304a7610c9f5"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",

@@ -18,6 +18,14 @@ WORKDIR /app
 
 COPY package*.json .npmrc ./
 RUN npm ci --ignore-scripts
+# @wyre-technology/node-iqms is a git dependency with no prebuilt dist in its
+# repo — it needs its own `prepare` script to build dist/ on install. The
+# blanket --ignore-scripts above (correct for every other dependency) skips
+# that, leaving node_modules/@wyre-technology/node-iqms without a dist/ at
+# all and crashing at runtime with ERR_MODULE_NOT_FOUND. Re-install just this
+# one package with scripts enabled instead of disabling --ignore-scripts
+# fleet-wide.
+RUN npm install --ignore-scripts=false --no-save @wyre-technology/node-iqms@github:wyre-technology/node-iqms#main
 COPY . .
 RUN npm run build
 RUN npm prune --omit=dev

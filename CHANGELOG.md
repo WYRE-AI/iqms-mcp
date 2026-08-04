@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The published container could not start at all**: `ERR_MODULE_NOT_FOUND` for
+  `@wyre-technology/node-iqms/dist/index.js`, so `iqms-mcp` crash-looped on every
+  deploy. The SDK was declared as a git dependency
+  (`github:wyre-technology/node-iqms#main`), and the SDK builds its `dist/` in a
+  `prepare` script — which `npm ci --ignore-scripts` (the Dockerfile's install
+  step, correctly used to avoid a premature build) skips. The dependency now
+  resolves from GitHub Packages (`^1.0.1`), where `dist/` ships prebuilt in the
+  published tarball. Added the `.npmrc` that scope needs.
+
 ### Added
 - Initial scaffold of `iqms-mcp` server.
 - Decision-tree navigation tools (`iqms_navigate`, `iqms_status`).

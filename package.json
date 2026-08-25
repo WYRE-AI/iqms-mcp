@@ -1,5 +1,5 @@
 {
-  "name": "iqms-mcp",
+  "name": "@wyre-ai/iqms-mcp",
   "version": "0.0.0-semantically-released",
   "description": "MCP server for IQMS / DELMIAworks (EnterpriseIQ) — read manufacturing ERP data via Oracle and post transactional updates via the WebAPI module",
   "type": "module",
@@ -35,7 +35,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wyre-technology/iqms-mcp.git"
+    "url": "git+https://github.com/WYRE-AI/iqms-mcp.git"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

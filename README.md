@@ -61,7 +61,7 @@ Write tools (WebAPI, gated):
 IQMS_ORACLE_USER=eiq_ro \
 IQMS_ORACLE_PASSWORD=… \
 IQMS_ORACLE_CONNECT_STRING=eiq-db.example.com:1521/EIQ \
-npx -y github:wyre-technology/iqms-mcp
+npx -y github:WYRE-AI/iqms-mcp
 ```
 
 ### Gateway (HTTP, stateless)

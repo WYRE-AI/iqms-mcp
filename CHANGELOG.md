@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Handler-invocation test coverage for all seven domain modules (boms, inventory,
+  purchase-orders, quality, sales-orders, schedule, workorders): each exported
+  tool handler is now invoked directly against a mocked `IqmsClient`, asserting
+  both the outbound call shape (snake_case tool args mapped to the client's
+  camelCase params) and the response mapping (raw client rows/records mapped
+  into the tool's JSON text content), plus rejected-call and unknown-tool-name
+  error paths. Previously only the tool *surface* (`getTools()` names/schemas)
+  was exercised — the request-shaping and response-mapping logic inside every
+  `handleCall` ran in production with zero test coverage.
+- `tests/unit/server-dispatch.test.ts`: end-to-end coverage of `createServer()`'s
+  `CallToolRequestSchema` handler over a real in-memory MCP transport —
+  `iqms_navigate` (valid/invalid domain), `iqms_status` (with/without
+  credentials), the domain-routing loop, the try/catch that maps a thrown
+  handler error into an `isError` result instead of rejecting, and the
+  unknown-tool-name fallback. None of this dispatch/routing logic was
+  previously invoked by any test.
+
 ### Fixed
 
 - **The published container could not start at all**: `ERR_MODULE_NOT_FOUND` for

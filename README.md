@@ -4,7 +4,7 @@ MCP server for **IQMS / DELMIAworks** (EnterpriseIQ), the manufacturing ERP
 from Dassault Systèmes.
 
 > **Status:** Read tools issue queries through
-> [`@wyre-technology/node-iqms`](https://github.com/wyre-technology/node-iqms)
+> [`@wyre-technology/node-iqms`](https://github.com/WYRE-AI/node-iqms)
 > against the Direct Oracle path (always available). Write tools route through
 > the licensed DELMIAworks WebAPI module — an optional add-on — and throw
 > `DriverNotConfiguredError` until `X-IQMS-WebAPI-Base-URL` credentials are
